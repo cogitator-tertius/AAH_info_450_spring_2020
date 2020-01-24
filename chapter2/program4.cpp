@@ -16,5 +16,7 @@
 
         cout << "Liters: " << liters;
 
+        cin;
+
         return 0;
     }
