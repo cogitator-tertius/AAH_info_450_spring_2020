@@ -7,12 +7,11 @@
 #include<stdio.h>
 using namespace std;
 
-//void printStudentNames(char[] student_name_array, int count_of_names);
 
 int main()
 {
     char studentNameArray[30][100];
-    char userInput[100];
+    //char userInput[100];
     int numberOfEntries = 0;
     int maximumNameCount = 30;
     int i = 0;

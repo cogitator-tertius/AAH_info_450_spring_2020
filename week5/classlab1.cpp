@@ -1,9 +1,8 @@
 #include<iostream>
-#include<cstring>
+#include<cstdio>
 using namespace std;
-#include"account.h"
 
 int main()
 {
-    account a();
+
 }
