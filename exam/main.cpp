@@ -4,7 +4,7 @@ using namespace std;
 
 class account {
     private:
-        string name;
+        char name[50];
         long taxID;
         double balance;
     protected:
@@ -12,19 +12,20 @@ class account {
         int numberWithdraws;
     public:
         account(){};
-        account(string account_name, long int tax_id, double starting_balance)
+        account(string *name_ptr, long int tax_id, double starting_balance)
         {
-            SetName(account_name);
+            name_ptr->copy(name, name_ptr->length(), 0);
+            SetName(name);
             SetTaxID(tax_id);
             SetBalance(starting_balance);
         }
-        void SetName(string account_name)
+        void SetName(char account_name[])
         {
-            if(account_name == "\0" || account_name == "")
+            if(account_name == "" || account_name == "/0")
             {
                 cout << "Please enter a valid name for this account." << endl;
             }
-            else{name = account_name;}            
+            //else{account_name->copy(name, 50, 0);}            
         }
         void SetTaxID(long int tax_id)
         {
@@ -55,10 +56,10 @@ class account {
                 balance = balance_amount;
             }
         }
-        string GetName()
+  /*       string GetName()
         {
             return name;
-        }
+        } */
         double GetBalance()
         {
             return balance;
@@ -97,7 +98,7 @@ int main()
     cin >> input_balance;
     cout << "9 digit tax id? ";
     cin >> input_tax_id;
-    account a(input_name, input_tax_id, input_balance);
+    account a(&input_name, input_tax_id, input_balance);
     a.Display();
 
     // if(err_msg)
