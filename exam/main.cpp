@@ -35,7 +35,7 @@ class account {
         {
             // No params, per spec. Should probably set some defaults for this stuff - never hurts
             // to have a plan for obvious scenarios!
-        };
+        }
         account(string input_name, long int input_tax_id, double input_starting_balance)
         {
             // I had an absolute nightmare getting this to work with a pointer, and I'll be damned if I know why.
@@ -146,7 +146,7 @@ class account {
         }
 };
 
-class checking : public account{
+class checking : private account{
     private:
         int last10checks[10];
 
@@ -157,7 +157,7 @@ class checking : public account{
     {
         // No params, per spec. Should probably set some defaults for this stuff - never hurts
         // to have a plan for obvious scenarios!
-    };
+    }
     // This might work? Revisit when it's not 2:30 am, bruh.
     checking(string input_name, long int input_tax_id, double input_starting_balance)
     {
@@ -166,7 +166,7 @@ class checking : public account{
             SetBalance(input_starting_balance);
             numberDeposits = 1;
             numberWithdraws = 0;
-    };
+    }
     void WriteCheck(int check_number, double check_amount)
     {
         // Need to add handling for negative check amounts.
@@ -292,8 +292,7 @@ class savings : public account{
     }
 };
 
-int main()
-{
+int main(){
     // Not sure if you wanted to be able to enter the values, but it was good practice for handling input!
     /*string input_name;
     double input_balance;
@@ -307,16 +306,16 @@ int main()
     */
     // No need for the type cast here
     //input_tax_id = (long int)input_tax_id;
-    string checkingName ("Checkmeout");
+    string checkingName = "Checkmeout";
     long int checkingTaxId = 654874123;
     double startingBalance = 100;
     account *account1;
     checking checkingaccount(checkingName, checkingTaxId, startingBalance);
-/*     account1 = &checkingaccount;
+    account1 = &checkingaccount;
     cout << "Name: " << account1->GetName() << endl;
     account1->Display();
     account1->WriteCheck(1000, 25.25);
-    account1->Display(); */
+    account1->Display();
 
     /* Exception handling is a maybe but not a super high priority, need to finish logic first. Either way, users putting in
     weird input values is hardly exceptional behavior, so it should be handled elsewhere.
