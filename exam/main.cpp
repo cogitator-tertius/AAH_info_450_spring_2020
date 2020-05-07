@@ -146,13 +146,14 @@ class account {
         }
 };
 
-class checking : private account{
+class checking : public account{
     private:
         int last10checks[10];
 
         // I suppose this is outside the specs, but it makes it easier to modify the logic
         // to put this in a variable rather than hard code it.
         int check_buffer_size = 10;
+    public:
     checking()
     {
         // No params, per spec. Should probably set some defaults for this stuff - never hurts
@@ -207,7 +208,7 @@ class checking : private account{
         // the last index OR an empty index in the array.
         for(int i = 0; i < check_buffer_size; i++)
         {
-            if(!last10checks[i])
+            if(numberWithdraws = i)
             {
                 cout << endl;
                 break;
@@ -224,9 +225,10 @@ class savings : public account{
     // Originally I was going to have the Display() method print out the the activity in an
     // accounting style T-chart, and transact type would determine which side the entry was printed
     // on. Requirement was removed from spec though maybe I'll take another pass at it later...
-    //private:
+    private:
         //int last10transactTypes[10];
         int saving_buffer_size = 10;
+    public:
     savings()
     {
         // No params, per spec. Should probably set some defaults for this stuff - never hurts
@@ -313,9 +315,9 @@ int main(){
     checking checkingaccount(checkingName, checkingTaxId, startingBalance);
     account1 = &checkingaccount;
     cout << "Name: " << account1->GetName() << endl;
-    account1->Display();
-    account1->WriteCheck(1000, 25.25);
-    account1->Display();
+    //account1->Display();
+    checkingaccount.WriteCheck(1000, 25.25);
+    checkingaccount.Display();
 
     /* Exception handling is a maybe but not a super high priority, need to finish logic first. Either way, users putting in
     weird input values is hardly exceptional behavior, so it should be handled elsewhere.
