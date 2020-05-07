@@ -1,85 +1,115 @@
-#include<string>
-#include<iostream>
-using namespace std;
+#include"account.h"
 
-class account {
-    private:
-        string name;
-        long taxID;
-        double balance;
-    protected:
-        int numberDeposits;
-        int numberWithdraws;
-    public:
-        account(){};
-        account(string account_name, long tax_id, double starting_balance)
+        account::account()
         {
-            SetName(account_name);
-            SetTaxID(tax_id);
-            SetBalance(starting_balance);
+            // No params, per spec. Should probably set some defaults for this stuff - never hurts
+            // to have a plan for obvious scenarios!
         }
-        void SetName(string account_name)
+        account::account(string input_name, long int input_tax_id, double input_starting_balance)
         {
-            if(account_name == "\0" || account_name == "")
+            // I had an absolute nightmare getting this to work with a pointer, and I'll be damned if I know why.
+            // ...
+            // I was going to delete this comment, but I wanted to leave it for posterity's sake.
+            // The problem was that, because using string type and not character arrays, my choice of printf()
+            // for the fancy formatting really screwed me over. Even though one of the specifiers for arguments
+            // in the documentation for printf (%s) is for a string of characters, they ain't the same thing.
+            // So I probably spent 4 or 5 days thinking about and tinkering with this to make it work... which
+            // it did. Except that I was using printf the wrong way.
+            SetName(input_name);
+            SetTaxID(input_tax_id);
+            SetBalance(input_starting_balance);
+            numberDeposits++;
+            numberWithdraws;
+        }
+        // I REALLY think that checking for errors in the name input should happen in it's own function... but
+        // first things first.
+        void account::SetName(string input_name)
+        {
+            // valid_input = ValidateTextInput(account_name);
+            if(input_name.empty())
             {
-                cout << "Please enter a valid name for this account." << endl;
+                // Recursion makes sense here, right?
+                cout << "Please enter a valid name for the account: ";
+                getline(cin, input_name);
+                SetName(input_name);
             }
-            else{name = account_name;}            
+            else
+            {
+                name = input_name;
+            }
         }
-        void SetTaxID(long tax_id)
+        void account::SetTaxID(long int input_tax_id)
         {
+            // Just checking for length with division. Could bear a re-visit to match pattern to SSNs:
+            // AAA-BB-CCCC
+            // No letter group can be all zeroes, AAA must not be over 740.
+            // ...
+            // A friend once told me "When you have a problem and you try to solve it with regular expressions,
+            // then you have two problems."
             int length = 0;
-            long n = tax_id;
+            long int n = input_tax_id;
             while(n !=0)
             {
-                n /= 10;
+                n = n/10;
                 length++;
             }
-            if(n != 9)
+            if(length != 9)
             {
-                cout << "Please enter a valid 9-digit tax ID number." << endl;
+                //long int input_tax_id;
+                cout << "Please enter a valid 9-digit tax ID number: ";
+                cin >> input_tax_id;
+                SetTaxID(input_tax_id);
             }
             else
             {
-                taxID = tax_id;
+                taxID = input_tax_id;
             }
         }
-        void SetBalance(double balance_amount)
+        void account::SetBalance(double input_balance)
         {
-            if(balance_amount < 0)
+            if(input_balance < 0 && numberDeposits == 0)
             {
-                cout << "Please enter a non-negative amount for the account balance." << endl;
+                cout << "Please enter a positive amount for the initial account balance: $";
+                cin >> input_balance;
+                SetBalance(input_balance);
             }
             else
             {
-                balance = balance_amount;
+                balance = input_balance;
             }
         }
-        string GetName()
+        string account::GetName()
         {
             return name;
         }
-        double GetBalance()
+        double account::GetBalance()
         {
             return balance;
         }
-        long GetTaxID()
+        long int account::GetTaxID()
         {
             return taxID;
         }
-        void MakeDeposit(double deposit_amount)
+        // Need to change this so that the initial deposit goes into the transaction record.
+        void account::MakeDeposit(double deposit_amount)
         {
             if(deposit_amount <= 0)
             {
-                cout << "Please enter a number greater than zero for deposit amount." << endl;
+                cout << "Please enter a number greater than zero for deposit amount: ";
+                cin >> deposit_amount;
+                MakeDeposit(deposit_amount);
             }
             else
             {
                 balance += deposit_amount;
+                numberDeposits++;
             }            
         }
-        virtual void Display()
+        void account::Display()
         {
-            printf("Account Name: %s\nTax ID: %d\nAvailable Balance: $%.2f\n", name, taxID, balance);
+            // If you saw my comments about printf, had to use the c_str() function in the string library to get it to play nice.
+            // What kind of ding dong creates a printf() that can't take strings! C++ really showing it's age in some ways.
+            // I did find sprintf() after the fact, but, low priority as it works for now!
+            // This would have been much easier in Python ;)
+            printf("\nAccount Name: %s\nTax ID: %ld\nAvailable Balance: $%.2f\n", GetName().c_str(), GetTaxID(), GetBalance());
         }
-};
