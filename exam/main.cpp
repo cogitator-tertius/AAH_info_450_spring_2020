@@ -7,17 +7,22 @@ using namespace std;
 // Base class functions
 void SetName(string input_name);
 void SetTaxID(long int input_tax_id);
-void SetBalance(double input_starting_balance);
+void SetBalance(double input_balance);
 string GetName();
 double GetBalance();
 long int GetTaxID();
 void MakeDeposit(double deposit_amount);
 void Display();
 
+//Checking class functions
 void WriteCheck(int check_number, double check_amount);
 
+//Savings class functions
 void DoWithDraw(double withdraw_amount);
 
+//CreditCard class functions
+void DoCharge(string name, double amount);
+void MakePayment(double amount);
 
 class account {
     private:
@@ -27,8 +32,8 @@ class account {
         //bool valid_input;
         int transaction_buffer_size = 10;
     protected:
-        int numberDeposits;
-        int numberWithdraws;
+        int numberDeposits = 0;
+        int numberWithdraws = 0;
         double transaction_record[10];
     public:
         account()
@@ -49,8 +54,8 @@ class account {
             SetName(input_name);
             SetTaxID(input_tax_id);
             SetBalance(input_starting_balance);
-            numberDeposits = 1;
-            numberWithdraws = 0;
+            numberDeposits++;
+            numberWithdraws;
         }
         // I REALLY think that checking for errors in the name input should happen in it's own function... but
         // first things first.
@@ -98,7 +103,7 @@ class account {
         }
         void SetBalance(double input_balance)
         {
-            if(input_balance < 0)
+            if(input_balance < 0 && numberDeposits == 0)
             {
                 cout << "Please enter a positive amount for the initial account balance: $";
                 cin >> input_balance;
@@ -159,7 +164,7 @@ class checking : public account{
         // No params, per spec. Should probably set some defaults for this stuff - never hurts
         // to have a plan for obvious scenarios!
     }
-    // This might work? Revisit when it's not 2:30 am, bruh.
+
     checking(string input_name, long int input_tax_id, double input_starting_balance)
     {
             SetName(input_name);
@@ -171,44 +176,49 @@ class checking : public account{
     void WriteCheck(int check_number, double check_amount)
     {
         // Need to add handling for negative check amounts.
-
-        // If the transaction arrays are not full, add one to it and increment the number of withdraws
-        // If the array with checknumbers is full, shift each check number to the previous index in the
-        // array, then put the new transaction in the last index (in this case, 9).
-        if(numberWithdraws < check_buffer_size)
+        if(check_amount <= 0)
         {
-            last10checks[numberWithdraws] = check_number;
-            transaction_record[numberWithdraws] = check_amount;
+            cout << "Check amount must be greater than $0. \nPlease enter the check amount: $";
+            cin >> check_amount;
+            WriteCheck(check_number, check_amount);
         }
-        // Will try without the array.size() in Savings, if it works there, I'll bring it up here.
-        else// if(last10checks.length() == check_buffer_size)
-        {
+        else
+        {   // If the transaction arrays are not full, add one to it and increment the number of withdraws
+            // If the array with checknumbers is full, shift each check number to the previous index in the
+            // array, then put the new transaction in the last index (in this case, 9).
+            if(numberWithdraws < check_buffer_size)
+            {
+                last10checks[numberWithdraws] = check_number;
+                transaction_record[numberWithdraws] = check_amount;
+            }
+            else
+            {
             // Move each record in the buffer to the preceding index, then put last
             // transaction into index 9.
-            for(int i = 1; i < check_buffer_size; i++)
-            {
-                last10checks[i - 1] = last10checks[i];
-                transaction_record[i - 1] = transaction_record[i];
+                for(int i = 1; i < check_buffer_size; i++)
+                {
+                    last10checks[i - 1] = last10checks[i];
+                    transaction_record[i - 1] = transaction_record[i];
+                }
+                last10checks[check_buffer_size - 1] = check_number;
+                transaction_record[check_buffer_size -1] = check_amount;
             }
-            last10checks[check_buffer_size - 1] = check_number;
-            transaction_record[check_buffer_size -1] = check_amount;
-        }
         // Almost forgot to subtract the withdraw from the balance!
         // double current_balance = GetBalance(); don't really need this
         SetBalance((GetBalance() - check_amount));
         // Increment the number of withdraws no matter which condition is true.
         numberWithdraws++;
+        }
     }
     void Display()
     {
         // Print the basic account info... I'm still salty about printf and string objects >:(
         printf("\nAccount Name: %s\nTax ID: %ld\nAvailable Balance: $%.2f\n", GetName().c_str(), GetTaxID(), GetBalance());
 
-        // This should print a list of each check # and transaction in the buffer, up until
-        // the last index OR an empty index in the array.
+        // Print check #'s and amounts, stop early if there are less than 10 checks in register
         for(int i = 0; i < check_buffer_size; i++)
         {
-            if(numberWithdraws = i)
+            if(numberWithdraws == i)
             {
                 cout << endl;
                 break;
@@ -218,7 +228,7 @@ class checking : public account{
 
         // Print some info about the total number of transactions, so we can actually use the number of deposits
         // for something!
-        printf("Total transactions: %d Deposits: %d Withdraws: %d \n", numberDeposits + numberWithdraws, numberDeposits, numberWithdraws);
+        printf("Total transactions: %d Deposits: %d Withdrawals: %d \n", numberDeposits + numberWithdraws, numberDeposits, numberWithdraws);
     }
 };
 class savings : public account{
@@ -257,7 +267,6 @@ class savings : public account{
             {
                 transaction_record[numberWithdraws] = withdraw_amount;
             }
-            // Gonna test a more straightforward way to handle the buffer
             else
             {
                 for(int i = 1; i < saving_buffer_size; i++)
@@ -276,22 +285,51 @@ class savings : public account{
     {
         printf("\nAccount Name: %s\nTax ID: %ld\nAvailable Balance: $%.2f\n", GetName().c_str(), GetTaxID(), GetBalance());
 
-        // This should print a list of each withdrawal in the buffer, up until
-        // the last index OR an empty index in the array.
+        //print withdraws, stop early if there are less than 10 withdraws
         for(int i = 0; i < saving_buffer_size; i++)
         {
-            if(!transaction_record[i])
+            if(numberWithdraws == i)
             {
                 cout << endl;
                 break;
             }
-            printf("Withdrawal amount: ($%.2f) \n", transaction_record[i]);
+            printf("Withdrawal: ($%.2f) \n", transaction_record[i]);
         }
-
-        // Print some info about the total number of transactions, so we can actually use the number of deposits
-        // for something!
+        // Print some info about the total number of transactions
         printf("Total transactions: %d Deposits: %d Withdraws: %d \n", numberDeposits + numberWithdraws, numberDeposits, numberWithdraws);
     }
+};
+class creditCard : public account{
+    private:
+        long int cardnumber;
+        int last10charges[10];
+        int credit_card_buffer_size = 10;
+    public:
+        creditCard()
+        {
+            // No params, per spec. Should probably set some defaults for this stuff - never hurts
+            // to have a plan for obvious scenarios!
+        }
+        creditCard(string input_name, long int input_tax_id, double input_starting_balance)
+        {
+            SetName(input_name);
+            SetTaxID(input_tax_id);
+            SetBalance(input_starting_balance);
+            numberDeposits = 1;
+            numberWithdraws = 0;
+        }
+        void DoCharge(string name, double amount)
+        {
+
+        }
+        void MakePayment(double amount)
+        {
+
+        }
+        void Display()
+        {
+
+        }
 };
 
 int main(){
@@ -306,18 +344,50 @@ int main(){
     cout << "9 digit tax id? ";
     cin >> input_tax_id;
     */
-    // No need for the type cast here
-    //input_tax_id = (long int)input_tax_id;
-    string checkingName = "Checkmeout";
+
+    // War... war never changes. Just like the starting balance...
+    const double _startingBalance = -100;
+    bool testsEnabled = true; //enable to run tests
+
+    // set up checking account
+    string checkingName = "Mike Check";
     long int checkingTaxId = 654874123;
-    double startingBalance = 100;
     account *account1;
-    checking checkingaccount(checkingName, checkingTaxId, startingBalance);
+    checking checkingaccount(checkingName, checkingTaxId, _startingBalance);
     account1 = &checkingaccount;
-    cout << "Name: " << account1->GetName() << endl;
-    //account1->Display();
-    checkingaccount.WriteCheck(1000, 25.25);
     checkingaccount.Display();
+
+    if(testsEnabled){
+        checkingaccount.MakeDeposit(100.1);
+        checkingaccount.Display();
+        for(int i = -1; i < 12; i++)
+        {
+            checkingaccount.WriteCheck((1000 + i), (i));
+            cout << "Writing check #" << i << "... current checking balance is $" << checkingaccount.GetBalance() << endl;
+        }
+        checkingaccount.Display();
+    }
+
+    // set up savings account
+    string savingsName = "Best for last";
+    long int savingsTaxId = 951753684;
+    account *account2;
+    savings savingaccount(savingsName, savingsTaxId, _startingBalance);
+    account2 = &savingaccount;
+    savingaccount.Display();
+
+    if(testsEnabled){
+        savingaccount.MakeDeposit(100.01);
+        savingaccount.Display();
+        for(int i = -1; i < 12; i++)
+        {
+            savingaccount.DoWithDraw(i + .25);
+            cout << "Withdrawal #" << i << "... current savings balance is $" << savingaccount.GetBalance() << endl;
+        }
+    savingaccount.Display();
+    }
+
+    
 
     /* Exception handling is a maybe but not a super high priority, need to finish logic first. Either way, users putting in
     weird input values is hardly exceptional behavior, so it should be handled elsewhere.
