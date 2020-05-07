@@ -175,7 +175,7 @@ class checking : public account{
     }
     void WriteCheck(int check_number, double check_amount)
     {
-        // Need to add handling for negative check amounts.
+        // Need to add handling for negative check numbers?
         if(check_amount <= 0)
         {
             cout << "Check amount must be greater than $0. \nPlease enter the check amount: $";
@@ -301,8 +301,8 @@ class savings : public account{
 };
 class creditCard : public account{
     private:
-        long int cardnumber;
-        int last10charges[10];
+        long long int cardnumber;
+        string last10charges[10];
         int credit_card_buffer_size = 10;
     public:
         creditCard()
@@ -312,28 +312,91 @@ class creditCard : public account{
         }
         creditCard(string input_name, long int input_tax_id, double input_starting_balance)
         {
+
+
+            // The loop creates a 16-digit pseudorandom card number using srand and
+            // rand. srand gets the value of the counter so that the card has a different
+            // set of 4umbers in each group.
+            long long int temp = 0;
+            for(int i = 1; i < 5; i++)
+            {
+                srand(i);
+                temp *= 10000;
+                temp += rand() % 5000 + 4000;
+                cout << "CC: " << temp << endl; 
+            }
+            cardnumber = temp;
             SetName(input_name);
             SetTaxID(input_tax_id);
             SetBalance(input_starting_balance);
             numberDeposits = 1;
             numberWithdraws = 0;
         }
-        void DoCharge(string name, double amount)
+        void DoCharge(string charge_name, double charge_amount)
         {
-
+            // Will come back to this, probably a better way to handle it. if with a ternary?
+            if(charge_name.empty())
+            {
+                cout << "There must be a name provided with the charge.\nPlease enter a valid name: ";
+                getline(cin, charge_name);
+                DoCharge(charge_name, charge_amount);
+            }
+            else if(charge_amount <= 0)
+            {
+                cout << "Credit card charge amount must be greater than $0.\nPlease enter a valid charge amount: $";
+                cin >> charge_amount;
+                DoCharge(charge_name, charge_amount);
+            }
+            else
+            {
+                if(numberWithdraws < credit_card_buffer_size)
+                {
+                    last10charges[numberWithdraws] = charge_name;
+                    transaction_record[numberWithdraws] = charge_amount;
+                }
+                else
+                {
+                    for(int i = 1; i < credit_card_buffer_size; i++)
+                    {
+                        last10charges[i - 1] = last10charges[i];
+                        transaction_record[i - 1] = transaction_record[i]; 
+                    }
+                    last10charges[credit_card_buffer_size - 1] = charge_name;
+                    transaction_record[credit_card_buffer_size - 1] = charge_amount;
+                }
+                
+            }
+            // The available credit is considered as available balance in the account.
+            // Charges are equivalent to withdraws in this use case.
+            SetBalance((GetBalance() - charge_amount));
+            numberWithdraws++;
         }
-        void MakePayment(double amount)
+        void MakePayment(double payment_amount)
         {
-
+            // Should this show up as a transaction in the buffer?
+            // Implementation depends on time available.
+            MakeDeposit(payment_amount);
         }
         void Display()
         {
-
+            // Print basic account info. Should be it's own function IMHO.
+            printf("\nAccount Name: %s\nTax ID: %ld\nAvailable Balance: $%.2f\nCard #:%ld\n", GetName().c_str(), GetTaxID(), GetBalance(),cardnumber);
+            // Print numbered list of charges and amounts.
+            for(int i = 0; i < credit_card_buffer_size; i++)
+            {
+                // slightly different implementation, a little shorter
+                if(numberWithdraws == i){break;}
+                printf("%d. Name: %s Amount: $%.2f\n", i+1, last10charges[i].c_str(), transaction_record[i]);
+            }
+            cout << endl;
+            // Print info about total number and type of transactions.
+            printf("Total transactions: %d Deposits: %d Withdrawals: %d \n", numberDeposits + numberWithdraws, numberDeposits, numberWithdraws);
         }
 };
 
 int main(){
-    // Not sure if you wanted to be able to enter the values, but it was good practice for handling input!
+    // Not sure you wanted to be able to enter the values, but I 
+    // started that way before writing a few simple tests.
     /*string input_name;
     double input_balance;
     long int input_tax_id;
@@ -346,8 +409,8 @@ int main(){
     */
 
     // War... war never changes. Just like the starting balance...
-    const double _startingBalance = -100;
-    bool testsEnabled = true; //enable to run tests
+    const double _startingBalance = 100;
+    bool testsEnabled = false; //enable to run tests
 
     // set up checking account
     string checkingName = "Mike Check";
@@ -387,7 +450,13 @@ int main(){
     savingaccount.Display();
     }
 
-    
+    // set up credit card account
+    string creditCardName = "Just Charge It";
+    long int creditCardTaxId = 852963741;
+    account *account3;
+    creditCard creditaccount(creditCardName, creditCardTaxId, _startingBalance);
+    account3 = &creditaccount;
+    creditaccount.Display();
 
     /* Exception handling is a maybe but not a super high priority, need to finish logic first. Either way, users putting in
     weird input values is hardly exceptional behavior, so it should be handled elsewhere.
