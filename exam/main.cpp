@@ -301,7 +301,7 @@ class savings : public account{
 };
 class creditCard : public account{
     private:
-        long long int cardnumber;
+        long int cardnumber;
         string last10charges[10];
         int credit_card_buffer_size = 10;
     public:
@@ -313,19 +313,19 @@ class creditCard : public account{
         creditCard(string input_name, long int input_tax_id, double input_starting_balance)
         {
 
-
+            // This is not behaving well at the moment, and I don't have a ton of time.
             // The loop creates a 16-digit pseudorandom card number using srand and
             // rand. srand gets the value of the counter so that the card has a different
             // set of 4umbers in each group.
-            long long int temp = 0;
-            for(int i = 1; i < 5; i++)
-            {
-                srand(i);
-                temp *= 10000;
-                temp += rand() % 5000 + 4000;
-                cout << "CC: " << temp << endl; 
-            }
-            cardnumber = temp;
+            // long long int temp = 0;
+            // for(int i = 1; i < 5; i++)
+            // {
+            //     srand(i);
+            //     temp *= 10000;
+            //     temp += rand() % 5000 + 4000;
+            //     cout << "CC: " << temp << endl; 
+            // }
+            cardnumber = 42949672;
             SetName(input_name);
             SetTaxID(input_tax_id);
             SetBalance(input_starting_balance);
@@ -380,17 +380,17 @@ class creditCard : public account{
         void Display()
         {
             // Print basic account info. Should be it's own function IMHO.
-            printf("\nAccount Name: %s\nTax ID: %ld\nAvailable Balance: $%.2f\nCard #:%ld\n", GetName().c_str(), GetTaxID(), GetBalance(),cardnumber);
+            printf("\nAccount Name: %s\nTax ID: %ld\nAvailable Credit: $%.2f\nCard #: %ld\n\nCharges:\n", GetName().c_str(), GetTaxID(), GetBalance(),cardnumber);
             // Print numbered list of charges and amounts.
             for(int i = 0; i < credit_card_buffer_size; i++)
             {
                 // slightly different implementation, a little shorter
                 if(numberWithdraws == i){break;}
-                printf("%d. Name: %s Amount: $%.2f\n", i+1, last10charges[i].c_str(), transaction_record[i]);
+                printf("%d. %s Amount: $%.2f\n", i+1, last10charges[i].c_str(), transaction_record[i]);
             }
             cout << endl;
             // Print info about total number and type of transactions.
-            printf("Total transactions: %d Deposits: %d Withdrawals: %d \n", numberDeposits + numberWithdraws, numberDeposits, numberWithdraws);
+            printf("Total transactions: %d Payments: %d Charges: %d \n", numberDeposits + numberWithdraws, numberDeposits, numberWithdraws);
         }
 };
 
@@ -411,6 +411,10 @@ int main(){
     // War... war never changes. Just like the starting balance...
     const double _startingBalance = 100;
     bool testsEnabled = false; //enable to run tests
+    int userMenuSelection;
+    double userDoubleInput;
+    string userStringInput;
+    int userIntegerInput;
 
     // set up checking account
     string checkingName = "Mike Check";
@@ -458,6 +462,95 @@ int main(){
     account3 = &creditaccount;
     creditaccount.Display();
 
+    if(testsEnabled){
+        creditaccount.DoCharge("Banana hammock",50);
+        creditaccount.Display();
+        creditaccount.MakePayment(69);
+        creditaccount.Display();
+    }
+
+    while(userMenuSelection != 0)
+    {
+        // print the header with balance info.
+        printf("Checking balance: $%.2f Savings balance: $%.2f Credit Card Balance: $%.2f\n", checkingaccount.GetBalance(), savingaccount.GetBalance(), creditaccount.GetBalance());
+        cout << " 1. Savings Deposit" << endl;
+        cout << " 2. Savings Withdrawal" << endl;
+        cout << " 3. Checking Deposit" << endl;
+        cout << " 4. Write A Check" << endl;
+        cout << " 5. Credit Card Payment" << endl;
+        cout << " 6. Make A Charge" << endl;
+        cout << " 7. Display Savings" << endl;
+        cout << " 8. Display Checking" << endl; 
+        cout << " 9. Display Credit Card" << endl; 
+        cout << " 0. Exit" << endl;
+        cout << "\n Please enter your selection: ";
+        cin >> userMenuSelection;
+
+        switch(userMenuSelection)
+        {
+            case 1:
+                cout << "Enter the deposit amount: $";
+                cin >> userDoubleInput;
+                savingaccount.MakeDeposit(userDoubleInput);
+                break;
+            case 2:
+                cout << "Enter the withdrawal amount: $";
+                cin >> userDoubleInput;
+                savingaccount.DoWithDraw(userDoubleInput);
+                break;
+            case 3:
+                cout << "Enter the deposit amount: $";
+                cin >> userDoubleInput;
+                checkingaccount.MakeDeposit(userDoubleInput);
+                break;
+            case 4:
+                cout << "Enter the check number: ";
+                cin >> userIntegerInput;
+                cout << "Enter the check amount: $";
+                cin >> userDoubleInput;
+                checkingaccount.WriteCheck(userIntegerInput, userDoubleInput);
+                break;
+            case 5:
+                cout << "Enter the payment amount: $";
+                cin >> userDoubleInput;
+                creditaccount.MakePayment(userDoubleInput);
+                break;
+            case 6:
+                cout << "Enter the charge amount: $";
+                cin >> userDoubleInput;
+                userStringInput.clear();
+                cout << "Enter a name for the charge: ";
+                // for some reason it keeps skipping this input - probably since the object already
+                // exists. For now, here's janky fix...
+                //if(userStringInput.empty()){(cin,userStringInput); cout << userStringInput;}
+                cin >> userStringInput;
+                creditaccount.DoCharge(userStringInput, userDoubleInput);
+                break;
+            case 7:
+                cout << "--- Savings Account ---";
+                savingaccount.Display();
+                cout << "\nPress any key to continue...";
+                system("pause");
+                break;
+            case 8:
+                cout << "--- Checking Account ---";
+                checkingaccount.Display();
+                system("pause");
+                break;
+            case 9:
+                cout << "--- Credit Card Account ---";
+                creditaccount.Display();
+                system("pause");
+                break;
+            case 0:
+                cout << "You have selected exit.";
+                system("pause");
+                break;
+            default:
+                cout << "Invalid selection. Please try again.";
+                break;                
+        }                                         
+    }
     /* Exception handling is a maybe but not a super high priority, need to finish logic first. Either way, users putting in
     weird input values is hardly exceptional behavior, so it should be handled elsewhere.
     try
